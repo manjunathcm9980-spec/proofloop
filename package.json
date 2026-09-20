@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build:lambdas": "esbuild backend/lambdas/problems/list.ts backend/lambdas/problems/create.ts backend/lambdas/problems/get.ts backend/lambdas/claim/claimProblem.ts backend/lambdas/logs/addBuildLog.ts backend/lambdas/proof/submitProof.ts backend/lambdas/proof/validateProof.ts backend/lambdas/wall/getWall.ts backend/lambdas/storage/getUploadUrl.ts --bundle --platform=node --target=node20 --outdir=dist/lambdas",
-    "build": "npm run build:lambdas && tsc -b && vite build",
+    "build": "tsc -b && vite build",
+    "build:all": "npm run build:lambdas && npm run build",
     "lint": "tsc --noEmit",
     "preview": "vite preview",
     "server": "tsx backend/server.ts"
