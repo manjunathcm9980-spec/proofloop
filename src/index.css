@@ -1,0 +1,96 @@
+@import "tailwindcss";
+
+@layer base {
+  body {
+    background-color: #0B0E14;
+    color: #F2F0EB;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+
+  h1, h2, h3, .font-display {
+    font-family: 'Space Grotesk', system-ui, sans-serif;
+    letter-spacing: -0.02em;
+  }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #0B0E14;
+}
+::-webkit-scrollbar-thumb {
+  background: #1A1E28;
+  border-radius: 6px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #242834;
+}
+
+/* Brand Gradient Utilities */
+.text-gradient-amber {
+  background: linear-gradient(135deg, #FFB020 0%, #FF6B4A 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.bg-gradient-amber {
+  background: linear-gradient(135deg, #FFB020 0%, #FF6B4A 100%);
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #FFB020 0%, #FF6B4A 100%);
+  color: #0B0E14;
+  font-weight: 700;
+  transition: transform 0.15s ease, opacity 0.15s ease;
+}
+
+.btn-primary:hover {
+  opacity: 0.93;
+  transform: translateY(-1px);
+}
+
+/* Pure Solid Opaque Cards & Panels (Zero GPU blur shaking or text overlap) */
+.glass-panel {
+  background-color: #12151C;
+  border: 1px solid #242834;
+}
+
+.glass-card {
+  background-color: #12151C;
+  border: 1px solid #242834;
+  border-radius: 16px;
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.glass-card:hover {
+  border-color: rgba(255, 176, 32, 0.35);
+  transform: translateY(-2px);
+}
+
+/* Semantic Status Badge Utilities */
+.badge-open {
+  background: rgba(59, 130, 246, 0.12);
+  color: #60A5FA;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.badge-claimed {
+  background: rgba(217, 119, 6, 0.15);
+  color: #FBBF24;
+  border: 1px solid rgba(217, 119, 6, 0.3);
+}
+
+.badge-in-progress {
+  background: rgba(168, 85, 247, 0.15);
+  color: #C084FC;
+  border: 1px solid rgba(168, 85, 247, 0.3);
+}
+
+.badge-solved {
+  background: rgba(16, 185, 129, 0.15);
+  color: #34D399;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}

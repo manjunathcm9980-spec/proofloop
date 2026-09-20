@@ -1,0 +1,126 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: ProofLoop AWS Infrastructure - DynamoDB, Cognito User Pool, S3 Media Bucket, API Gateway & Lambda Functions
+
+Globals:
+  Function:
+    Timeout: 10
+    MemorySize: 256
+    Runtime: nodejs20.x
+    Environment:
+      Variables:
+        DYNAMODB_TABLE_NAME: !Ref ProofLoopDynamoDBTable
+        S3_BUCKET_NAME: !Ref ProofLoopMediaBucket
+
+Resources:
+  # 1. AWS DynamoDB Single-Table Design
+  ProofLoopDynamoDBTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: ProofLoopData
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: PK
+          AttributeType: S
+        - AttributeName: SK
+          AttributeType: S
+        - AttributeName: GSI1PK
+          AttributeType: S
+        - AttributeName: GSI1SK
+          AttributeType: S
+      KeySchema:
+        - AttributeName: PK
+          KeyType: HASH
+        - AttributeName: SK
+          KeyType: RANGE
+      GlobalSecondaryIndexes:
+        - IndexName: GSI1
+          KeySchema:
+            - AttributeName: GSI1PK
+              KeyType: HASH
+            - AttributeName: GSI1SK
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+
+  # 2. Amazon Cognito User Pool for Auth & Custom Roles
+  ProofLoopUserPool:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      UserPoolName: ProofLoopUserPool
+      AutoVerifiedAttributes:
+        - email
+      Schema:
+        - Name: email
+          Required: true
+          Mutable: true
+        - Name: role
+          AttributeDataType: String
+          Mutable: true
+
+  ProofLoopUserPoolClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      ClientName: ProofLoopWebClient
+      UserPoolId: !Ref ProofLoopUserPool
+      ExplicitAuthFlows:
+        - ALLOW_USER_SRP_AUTH
+        - ALLOW_REFRESH_TOKEN_AUTH
+
+  # 3. AWS S3 Bucket for Media Uploads (Screenshots & Proofs)
+  ProofLoopMediaBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub "proofloop-media-${AWS::AccountId}"
+      CorsConfiguration:
+        CorsRules:
+          - AllowedHeaders: ["*"]
+            AllowedMethods: [GET, PUT, POST, DELETE, HEAD]
+            AllowedOrigins: ["*"]
+
+  # 4. AWS Lambda Functions behind API Gateway
+  ListProblemsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./backend/lambdas/problems/
+      Handler: list.handler
+      Events:
+        ListApi:
+          Type: Api
+          Properties:
+            Path: /api/problems
+            Method: get
+
+  CreateProblemFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./backend/lambdas/problems/
+      Handler: create.handler
+      Events:
+        CreateApi:
+          Type: Api
+          Properties:
+            Path: /api/problems
+            Method: post
+
+  GetProblemFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./backend/lambdas/problems/
+      Handler: get.handler
+      Events:
+        GetApi:
+          Type: Api
+          Properties:
+            Path: /api/problems/{id}
+            Method: get
+
+Outputs:
+  DynamoDBTableName:
+    Value: !Ref ProofLoopDynamoDBTable
+  CognitoUserPoolId:
+    Value: !Ref ProofLoopUserPool
+  CognitoClientId:
+    Value: !Ref ProofLoopUserPoolClient
+  S3BucketName:
+    Value: !Ref ProofLoopMediaBucket
