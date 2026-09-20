@@ -36,26 +36,30 @@ export const LoginPage: React.FC = () => {
         <p className="text-xs text-[#A8A5A0]">Amazon Cognito User Pool Authenticated</p>
       </div>
 
-      {/* Quick Demo Pre-fills */}
-      <div className="p-4 rounded-2xl bg-[#12151C] border border-[#242834] space-y-2">
-        <span className="text-xs font-bold text-[#FFB020] flex items-center gap-1">
-          <Sparkles className="w-3.5 h-3.5" /> Quick Demo Session Switcher:
+      {/* Quick Role Selection Onboarding Switcher */}
+      <div className="p-5 rounded-3xl bg-[#12151C] border border-[#FFB020]/30 space-y-3 shadow-xl">
+        <span className="text-xs font-bold text-[#FFB020] flex items-center gap-1.5">
+          <Sparkles className="w-4 h-4 text-[#FFB020]" /> Role-Based College Verification System:
         </span>
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-2 gap-2.5">
           <button
-            onClick={() => handleDemoSelect('poster')}
-            className="p-3 rounded-xl bg-[#0B0E14] border border-[#242834] text-left hover:border-[#FFB020]/50 transition-colors"
+            onClick={() => {
+              navigate('/onboarding');
+            }}
+            className="p-3 rounded-2xl bg-[#0B0E14] border border-[#242834] text-left hover:border-[#FFB020]/50 transition-colors group"
           >
-            <p className="text-xs font-bold text-[#F2F0EB]">Sarah Lin</p>
-            <p className="text-[10px] text-[#FFB020] font-semibold">Problem Poster</p>
+            <p className="text-xs font-bold text-[#F2F0EB] group-hover:text-[#FFB020]">Student Role</p>
+            <p className="text-[10px] text-[#A8A5A0] font-medium">Verify ID & Claim Projects</p>
           </button>
 
           <button
-            onClick={() => handleDemoSelect('builder')}
-            className="p-3 rounded-xl bg-[#0B0E14] border border-[#242834] text-left hover:border-[#FF6B4A]/50 transition-colors"
+            onClick={() => {
+              navigate('/admin');
+            }}
+            className="p-3 rounded-2xl bg-[#0B0E14] border border-[#242834] text-left hover:border-[#FF6B4A]/50 transition-colors group"
           >
-            <p className="text-xs font-bold text-[#F2F0EB]">Alex Rivera</p>
-            <p className="text-[10px] text-[#FF6B4A] font-semibold">Student Builder</p>
+            <p className="text-xs font-bold text-[#F2F0EB] group-hover:text-[#FF6B4A]">Admin Role</p>
+            <p className="text-[10px] text-[#FF6B4A] font-semibold">Oversee & Approve IDs</p>
           </button>
         </div>
       </div>

@@ -12,6 +12,10 @@ import { DashboardPage } from './pages/DashboardPage';
 import { ProofWallPage } from './pages/ProofWallPage';
 import { LoginPage } from './pages/LoginPage';
 import { SignupPage } from './pages/SignupPage';
+import { RoleSelectionPage } from './pages/RoleSelectionPage';
+import { StudentVerificationPage } from './pages/StudentVerificationPage';
+import { AdminDashboardPage } from './pages/AdminDashboardPage';
+import { MyProjectsPage } from './pages/MyProjectsPage';
 
 export function App() {
   return (
@@ -27,6 +31,10 @@ export function App() {
             <main className="flex-grow">
               <Routes>
                 <Route path="/" element={<Home />} />
+                <Route path="/onboarding" element={<RoleSelectionPage />} />
+                <Route path="/verify-student" element={<StudentVerificationPage />} />
+                <Route path="/admin" element={<AdminDashboardPage />} />
+                <Route path="/my-projects" element={<MyProjectsPage />} />
                 <Route path="/problems" element={<ProblemsPage />} />
                 <Route path="/problems/:id" element={<ProblemDetailPage />} />
                 <Route path="/create-problem" element={<CreateProblemPage />} />

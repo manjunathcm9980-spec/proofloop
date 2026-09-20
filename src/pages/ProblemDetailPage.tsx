@@ -1,11 +1,19 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { Problem, BuildLog, Proof } from '../types';
+import { Problem, BuildLog, Proof, ProblemClaimRequest } from '../types';
 import { fetchProblemById, claimProblem, addBuildLog, submitProof, validateProof } from '../services/api';
 import { StatusBadge } from '../components/StatusBadge';
 import { BuildLogTimeline } from '../components/BuildLogTimeline';
 import { ImageUploadModal } from '../components/ImageUploadModal';
+import { SkillMatchCard } from '../components/SkillMatchCard';
+import { ClaimProblemModal } from '../components/ClaimProblemModal';
 import { useAuth } from '../context/AuthContext';
+import { 
+  getSkillMatch, 
+  getClaimByStudentAndProblem, 
+  submitProblemClaim, 
+  subscribeClaimStore 
+} from '../services/claimStore';
 import { 
   ArrowLeft, 
   Sparkles, 
@@ -16,17 +24,25 @@ import {
   UserCheck, 
   Send,
   Upload,
-  Eye
+  Eye,
+  Handshake,
+  Clock,
+  Lock,
+  GraduationCap
 } from 'lucide-react';
 
 export const ProblemDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const { user, role } = useAuth();
+  const { user, role, verificationStatus } = useAuth();
 
   const [problem, setProblem] = useState<Problem | null>(null);
   const [logs, setLogs] = useState<BuildLog[]>([]);
   const [proof, setProof] = useState<Proof | null>(null);
   const [loading, setLoading] = useState(true);
+
+  // Claim State
+  const [showClaimModal, setShowClaimModal] = useState(false);
+  const [claimRequest, setClaimRequest] = useState<ProblemClaimRequest | undefined>(undefined);
 
   // Modals & Form state
   const [logText, setLogText] = useState('');
@@ -44,7 +60,7 @@ export const ProblemDetailPage: React.FC = () => {
   const [posterComment, setPosterComment] = useState('');
 
   useEffect(() => {
-    if (showProofModal) {
+    if (showProofModal || showClaimModal) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = 'unset';
@@ -52,7 +68,7 @@ export const ProblemDetailPage: React.FC = () => {
     return () => {
       document.body.style.overflow = 'unset';
     };
-  }, [showProofModal]);
+  }, [showProofModal, showClaimModal]);
 
   const loadData = async () => {
     if (!id) return;
@@ -72,6 +88,41 @@ export const ProblemDetailPage: React.FC = () => {
   useEffect(() => {
     loadData();
   }, [id]);
+
+  // Sync claim request with live store
+  useEffect(() => {
+    if (!user || !id) return;
+    const syncClaim = () => {
+      const c = getClaimByStudentAndProblem(user.id, id) || getClaimByStudentAndProblem(user.email, id);
+      setClaimRequest(c);
+    };
+    syncClaim();
+    const unsubscribe = subscribeClaimStore(syncClaim);
+    return () => unsubscribe();
+  }, [user?.id, user?.email, id]);
+
+  const handleConfirmSubmitClaim = () => {
+    if (!user || !problem) return;
+    const match = getSkillMatch(
+      user.skills || ['React', 'TypeScript', 'Node.js', 'Database', 'AWS'],
+      problem.skillsNeeded
+    );
+
+    const newClaim = submitProblemClaim({
+      problemId: problem.id,
+      problemTitle: problem.title,
+      studentId: user.id,
+      studentName: user.name,
+      studentEmail: user.email,
+      collegeName: user.collegeName || 'Verified University Student',
+      matchPercentage: match.matchPercentage,
+      matchedSkills: match.matchedSkills,
+      missingSkills: match.missingSkills,
+    });
+
+    setClaimRequest(newClaim);
+    setShowClaimModal(false);
+  };
 
   const handleClaim = async () => {
     if (!user || !problem) return;
@@ -138,8 +189,14 @@ export const ProblemDetailPage: React.FC = () => {
     );
   }
 
-  const isAssignedBuilder = user && problem.claimedBy === user.id;
+  const isAssignedBuilder = user && (problem.claimedBy === user.id || claimRequest?.status === 'approved');
   const isPosterOwner = user && problem.posterId === user.id;
+  const isVerifiedStudent = verificationStatus === 'approved';
+
+  const skillMatch = getSkillMatch(
+    user?.skills || ['React', 'TypeScript', 'Node.js', 'Database', 'AWS'],
+    problem.skillsNeeded
+  );
 
   const isExternalDemoUrl = proof?.demoUrl && 
     (proof.demoUrl.startsWith('http://') || proof.demoUrl.startsWith('https://')) &&
@@ -206,6 +263,14 @@ export const ProblemDetailPage: React.FC = () => {
           </p>
         </div>
 
+        {/* Dynamic Skill Match Card Component */}
+        <SkillMatchCard
+          matchPercentage={skillMatch.matchPercentage}
+          matchedSkills={skillMatch.matchedSkills}
+          missingSkills={skillMatch.missingSkills}
+          reason={skillMatch.reason}
+        />
+
         {/* Skills & Action Bar */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-4 border-t border-[#242834]">
           <div>
@@ -219,24 +284,71 @@ export const ProblemDetailPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Action: Claim Problem */}
-          {problem.status === 'open' && role === 'builder' && (
-            <button
-              onClick={handleClaim}
-              className="px-6 py-3.5 rounded-2xl text-xs font-extrabold btn-primary flex items-center justify-center gap-2 shadow-lg shadow-[#FFB020]/20"
-            >
-              <Sparkles className="w-4 h-4" /> Claim Problem to Build
-            </button>
-          )}
+          {/* Action: Claim Problem with Verification Gate */}
+          <div className="flex flex-col sm:items-end gap-2">
+            {!isVerifiedStudent ? (
+              <div className="p-4 rounded-2xl bg-[#0B0E14] border border-amber-500/30 text-xs text-[#A8A5A0] space-y-2 max-w-sm">
+                <div className="flex items-center gap-1.5 font-bold text-[#FFB020]">
+                  <Lock className="w-4 h-4" /> Verify Student Identity to Claim
+                </div>
+                <p>Verify your student identity before claiming a problem.</p>
+                <Link
+                  to="/verify-student"
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold btn-primary"
+                >
+                  <GraduationCap className="w-3.5 h-3.5" /> Upload College ID to Verify
+                </Link>
+              </div>
+            ) : claimRequest?.status === 'pending' ? (
+              <div className="p-4 rounded-2xl bg-[#0B0E14] border border-[#FFB020]/40 text-xs text-right space-y-1">
+                <span className="px-3 py-1 rounded-lg text-xs font-bold uppercase tracking-wider bg-[#FFB020]/15 text-[#FFB020] border border-[#FFB020]/30 inline-flex items-center gap-1">
+                  <Clock className="w-3.5 h-3.5" /> Claim Pending
+                </span>
+                <p className="text-[#A8A5A0] text-[11px] pt-1">
+                  Your claim request has been sent to the administrator.
+                </p>
+              </div>
+            ) : claimRequest?.status === 'approved' || problem.claimedBy === user?.id ? (
+              <div className="p-4 rounded-2xl bg-[#0B0E14] border border-emerald-500/40 text-xs text-right space-y-1">
+                <span className="px-3 py-1 rounded-lg text-xs font-bold uppercase tracking-wider bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 inline-flex items-center gap-1">
+                  <CheckCircle2 className="w-3.5 h-3.5" /> Project Assigned to You
+                </span>
+                <p className="text-[#A8A5A0] text-[11px]">
+                  You are the active student builder for this problem!
+                </p>
+              </div>
+            ) : (
+              <button
+                onClick={() => setShowClaimModal(true)}
+                className="px-6 py-3.5 rounded-2xl text-xs font-extrabold btn-primary flex items-center justify-center gap-2 shadow-lg shadow-[#FFB020]/20"
+              >
+                <Handshake className="w-4.5 h-4.5" /> Claim This Problem
+              </button>
+            )}
 
-          {problem.claimedByName && (
-            <div className="p-3.5 rounded-2xl bg-[#0B0E14] border border-[#242834] text-xs">
-              <span className="text-[#A8A5A0] block">Assigned Builder:</span>
-              <span className="font-bold text-[#FFB020]">{problem.claimedByName}</span>
-            </div>
-          )}
+            {problem.claimedByName && (
+              <div className="p-3 rounded-xl bg-[#0B0E14] border border-[#242834] text-xs">
+                <span className="text-[#A8A5A0] block">Assigned Builder:</span>
+                <span className="font-bold text-[#FFB020]">{problem.claimedByName}</span>
+              </div>
+            )}
+          </div>
         </div>
       </div>
+
+      {/* Claim Problem Modal */}
+      {showClaimModal && user && problem && (
+        <ClaimProblemModal
+          problemTitle={problem.title}
+          studentName={user.name}
+          collegeName={user.collegeName || 'Yenepoya University'}
+          matchPercentage={skillMatch.matchPercentage}
+          matchedSkills={skillMatch.matchedSkills}
+          missingSkills={skillMatch.missingSkills}
+          onConfirm={handleConfirmSubmitClaim}
+          onClose={() => setShowClaimModal(false)}
+        />
+      )}
 
       {/* Proof Review Section (If proof exists) */}
       {proof && (

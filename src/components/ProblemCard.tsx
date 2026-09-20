@@ -2,7 +2,9 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Problem } from '../types';
 import { StatusBadge } from './StatusBadge';
-import { Users, ArrowRight, Calendar, Sparkles } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
+import { getSkillMatch } from '../services/claimStore';
+import { Users, ArrowRight, Calendar, Sparkles, Target } from 'lucide-react';
 
 interface ProblemCardProps {
   problem: Problem;
@@ -20,8 +22,14 @@ const CATEGORY_STYLES: Record<string, string> = {
   'Other': 'bg-slate-500/10 text-slate-400 border-slate-500/30',
 };
 
-export const ProblemCard: React.FC<ProblemCardProps> = ({ problem, onClaim, isBuilder, hideSkills }) => {
+export const ProblemCard: React.FC<ProblemCardProps> = ({ problem, onClaim, isBuilder }) => {
+  const { user } = useAuth();
   const catStyle = CATEGORY_STYLES[problem.category] || CATEGORY_STYLES['Other'];
+
+  const match = getSkillMatch(
+    user?.skills || ['React', 'TypeScript', 'Node.js', 'Database', 'AWS'],
+    problem.skillsNeeded
+  );
 
   return (
     <div className="glass-card rounded-2xl p-6 flex flex-col justify-between group hover:-translate-y-1.5 hover:shadow-xl hover:shadow-[#FFB020]/10 hover:border-[#FFB020]/40 transition-all duration-300">
@@ -31,7 +39,11 @@ export const ProblemCard: React.FC<ProblemCardProps> = ({ problem, onClaim, isBu
           <span className={`px-2.5 py-1 rounded-lg text-[11px] font-bold uppercase tracking-wider border ${catStyle}`}>
             {problem.category}
           </span>
+
           <div className="flex items-center gap-1.5">
+            <span className="px-2 py-0.5 rounded-lg text-[10px] font-extrabold uppercase bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 flex items-center gap-1">
+              <Target className="w-3 h-3 text-emerald-400" /> {match.matchPercentage}% Match
+            </span>
             <StatusBadge type="urgency" value={problem.urgency} />
             <StatusBadge type="problem" value={problem.status} />
           </div>

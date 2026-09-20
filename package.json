@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build:lambdas": "esbuild backend/lambdas/problems/list.ts backend/lambdas/problems/create.ts backend/lambdas/problems/get.ts backend/lambdas/claim/claimProblem.ts backend/lambdas/logs/addBuildLog.ts backend/lambdas/proof/submitProof.ts backend/lambdas/proof/validateProof.ts backend/lambdas/wall/getWall.ts backend/lambdas/storage/getUploadUrl.ts --bundle --platform=node --target=node20 --outdir=dist/lambdas",
+    "build": "npm run build:lambdas && tsc -b && vite build",
     "lint": "tsc --noEmit",
     "preview": "vite preview",
     "server": "tsx backend/server.ts"
@@ -35,6 +36,7 @@
     "@types/react": "^19.0.10",
     "@types/react-dom": "^19.0.4",
     "@vitejs/plugin-react": "^4.3.4",
+    "esbuild": "^0.28.2",
     "tailwindcss": "^4.0.7",
     "tsx": "^4.19.3",
     "typescript": "^5.7.3",

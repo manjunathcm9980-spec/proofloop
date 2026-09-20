@@ -33,6 +33,7 @@
 .text-gradient-amber {
   background: linear-gradient(135deg, #FFB020 0%, #FF6B4A 100%);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 

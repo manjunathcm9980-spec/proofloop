@@ -82,7 +82,7 @@ Resources:
   ListProblemsFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: ./backend/lambdas/problems/
+      CodeUri: ./dist/lambdas/problems/
       Handler: list.handler
       Events:
         ListApi:
@@ -94,7 +94,7 @@ Resources:
   CreateProblemFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: ./backend/lambdas/problems/
+      CodeUri: ./dist/lambdas/problems/
       Handler: create.handler
       Events:
         CreateApi:
@@ -106,7 +106,7 @@ Resources:
   GetProblemFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: ./backend/lambdas/problems/
+      CodeUri: ./dist/lambdas/problems/
       Handler: get.handler
       Events:
         GetApi:
@@ -114,6 +114,78 @@ Resources:
           Properties:
             Path: /api/problems/{id}
             Method: get
+
+  ClaimProblemFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./dist/lambdas/claim/
+      Handler: claimProblem.handler
+      Events:
+        ClaimApi:
+          Type: Api
+          Properties:
+            Path: /api/problems/{id}/claim
+            Method: post
+
+  AddBuildLogFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./dist/lambdas/logs/
+      Handler: addBuildLog.handler
+      Events:
+        LogsApi:
+          Type: Api
+          Properties:
+            Path: /api/problems/{id}/logs
+            Method: post
+
+  SubmitProofFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./dist/lambdas/proof/
+      Handler: submitProof.handler
+      Events:
+        SubmitProofApi:
+          Type: Api
+          Properties:
+            Path: /api/problems/{id}/proof
+            Method: post
+
+  ValidateProofFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./dist/lambdas/proof/
+      Handler: validateProof.handler
+      Events:
+        ValidateProofApi:
+          Type: Api
+          Properties:
+            Path: /api/proofs/{id}/validate
+            Method: post
+
+  GetWallFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./dist/lambdas/wall/
+      Handler: getWall.handler
+      Events:
+        WallApi:
+          Type: Api
+          Properties:
+            Path: /api/wall
+            Method: get
+
+  GetUploadUrlFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./dist/lambdas/storage/
+      Handler: getUploadUrl.handler
+      Events:
+        UploadUrlApi:
+          Type: Api
+          Properties:
+            Path: /api/storage/upload-url
+            Method: post
 
 Outputs:
   DynamoDBTableName:

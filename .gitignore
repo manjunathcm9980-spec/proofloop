@@ -1,0 +1,21 @@
+# Dependencies
+node_modules/
+
+# Production & Build Outputs
+dist/
+.aws-sam/
+
+# Environment & Local Files
+.env
+.env.local
+.env.*.local
+*.log
+response.json
+*.zip
+
+# IDE & OS Files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+tsconfig.tsbuildinfo
