@@ -7,11 +7,25 @@ export const DEMO_ADMIN: User = {
   id: 'usr_admin_master',
   email: 'admin@proofloop.org',
   name: 'Platform Administrator',
-  role: 'poster',
+  role: 'builder', // Admin has builder capabilities (Claim Problem)
   systemRole: 'admin',
   bio: 'ProofLoop System Administrator & Student Verification Manager',
   avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
   createdAt: '2026-09-01T00:00:00Z',
+};
+
+export const DEFAULT_STUDENT_USER: User = {
+  id: 'usr_student_manjunath',
+  email: 'manjunath@yenepoya.edu.in',
+  name: 'Manjunath',
+  role: 'poster', // Student has poster capabilities (Post Problem)
+  systemRole: 'student',
+  collegeName: 'Yenepoya University',
+  courseBranch: 'B.Tech AI/ML',
+  yearSemester: '2nd Year',
+  verificationStatus: 'approved',
+  createdAt: new Date().toISOString(),
+  avatarUrl: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=150&auto=format&fit=crop&q=80',
 };
 
 interface AuthContextType {
@@ -31,8 +45,9 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(() => {
     const u = getStoredUser();
-    if (!u) return DEMO_BUILDER;
-    return u;
+    if (!u) return DEFAULT_STUDENT_USER;
+    if (u.systemRole === 'admin') return DEMO_ADMIN;
+    return { ...DEFAULT_STUDENT_USER, ...u, role: 'poster', systemRole: 'student' };
   });
 
   // Sync user verification status with verificationStore
@@ -71,15 +86,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       id: `usr_${Date.now()}`,
       email,
       name: name || (email.split('@')[0]),
-      role,
+      role: systemRole === 'student' ? 'poster' : 'builder',
       systemRole,
       createdAt: new Date().toISOString(),
       avatarUrl: systemRole === 'admin'
         ? DEMO_ADMIN.avatarUrl
-        : role === 'poster' 
-        ? 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=80' 
         : 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=150&auto=format&fit=crop&q=80',
-      verificationStatus: existingVer ? existingVer.status : undefined,
+      verificationStatus: existingVer ? existingVer.status : 'approved',
     };
     setUser(newUser);
   };
@@ -90,14 +103,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const switchDemoRole = (role: UserRole) => {
     if (role === 'poster') {
-      setUser({ ...DEMO_POSTER, systemRole: 'student' });
+      setUser({ ...DEFAULT_STUDENT_USER, role: 'poster', systemRole: 'student' });
     } else {
-      const v = getVerificationByStudentId(DEMO_BUILDER.id) || getVerificationByStudentId(DEMO_BUILDER.email);
-      setUser({ 
-        ...DEMO_BUILDER, 
-        systemRole: 'student', 
-        verificationStatus: v ? v.status : 'approved' 
-      });
+      setUser({ ...DEMO_ADMIN, role: 'builder', systemRole: 'admin' });
     }
   };
 
@@ -105,22 +113,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (sysRole === 'admin') {
       setUser(DEMO_ADMIN);
     } else {
-      // Default Student (e.g. Manjunath demo student or Alex)
-      const v = getVerificationByStudentId('usr_student_manjunath');
-      const studentUser: User = {
-        id: 'usr_student_manjunath',
-        email: 'manjunath@yenepoya.edu.in',
-        name: 'Manjunath',
-        role: 'builder',
-        systemRole: 'student',
-        collegeName: 'Yenepoya University',
-        courseBranch: 'B.Tech AI/ML',
-        yearSemester: '2nd Year',
-        verificationStatus: v ? v.status : 'pending',
-        createdAt: new Date().toISOString(),
-        avatarUrl: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=150&auto=format&fit=crop&q=80',
-      };
-      setUser(studentUser);
+      const v = getVerificationByStudentId(DEFAULT_STUDENT_USER.id);
+      setUser({
+        ...DEFAULT_STUDENT_USER,
+        verificationStatus: v ? v.status : 'approved',
+      });
     }
   };
 
@@ -135,7 +132,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     <AuthContext.Provider
       value={{
         user,
-        role: user ? user.role : null,
+        role: user ? user.role : (currentSystemRole === 'student' ? 'poster' : 'builder'),
         systemRole: currentSystemRole,
         verificationStatus: currentVerificationStatus,
         login,
@@ -157,4 +154,3 @@ export const useAuth = () => {
   }
   return context;
 };
-
