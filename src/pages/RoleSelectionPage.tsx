@@ -59,13 +59,13 @@ export const RoleSelectionPage: React.FC = () => {
 
               <div>
                 <span className="text-[11px] font-extrabold uppercase tracking-widest text-[#FFB020] block mb-1">
-                  Primary Role
+                  Primary Builder Role
                 </span>
                 <h2 className="font-display text-2xl font-extrabold text-[#F2F0EB] group-hover:text-[#FFB020] transition-colors">
-                  Student
+                  Student Builder
                 </h2>
                 <p className="text-xs text-[#A8A5A0] leading-relaxed mt-2">
-                  Post real-world problems and connect with student builders.
+                  Verify college ID, claim real-world problems, build solutions, log build progress, and submit proof of work.
                 </p>
               </div>
             </div>
@@ -96,10 +96,10 @@ export const RoleSelectionPage: React.FC = () => {
                   Governance & Overseer
                 </span>
                 <h2 className="font-display text-2xl font-extrabold text-[#F2F0EB] group-hover:text-[#FF6B4A] transition-colors">
-                  Admin
+                  Admin & Problem Poster
                 </h2>
                 <p className="text-xs text-[#A8A5A0] leading-relaxed mt-2">
-                  Verify student identities, manage users, and oversee the platform.
+                  Post real-world problems, verify student identities, review submitted proof of work, and oversee platform governance.
                 </p>
               </div>
             </div>
