@@ -2,7 +2,8 @@
 
 **ProofLoop** is a decentralized, proof-of-work ecosystem and problem-solving marketplace. It connects problem submitters, builders, and community validators through transparent build logging, proof-of-work verification, and public recognition.
 
-🌐 **Live Public App:** [https://proofloop-sigma.vercel.app](https://proofloop-sigma.vercel.app)
+🌐 **Live AWS Amplify App:** [https://main.d2jm83lepfywrt.amplifyapp.com](https://main.d2jm83lepfywrt.amplifyapp.com)  
+🌐 **Live Vercel Mirror:** [https://proofloop-sigma.vercel.app](https://proofloop-sigma.vercel.app)
 
 ---
 
